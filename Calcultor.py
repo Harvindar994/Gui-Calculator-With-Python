@@ -9,6 +9,20 @@ Output_screen_value = StringVar()
 Output_screen_value.set("")
 Last_value = ''
 Last_number = ''
+def last_value_is_float(value):
+    value = ''
+    if value.isnumeric():
+        return False
+    lenth = len(value)-1
+    text = ''
+    if lenth>0:
+        while (value[lenth]>='0' and value[lenth]<='9' or value[lenth]=='.') and lenth!=0:
+            text += value[lenth]
+            lenth -= 1
+        if '.' in text:
+            return True
+        else:
+            return False
 def resolve_event(event):
     global Last_value
     global Last_number
@@ -16,6 +30,8 @@ def resolve_event(event):
     global Output_screen
     text = event.widget.cget('text')
     if text=='C':
+        Last_value = ''
+        Last_number = ''
         Output_screen_value.set("")
     elif text=='=':
         num = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
@@ -39,7 +55,7 @@ def resolve_event(event):
             value = value[0:len(value)-1]
             Output_screen_value.set(value)
     else:
-
+        print(last_value_is_float(Output_screen_value.get()))
         if text>='0' and text<='9':
             Last_number += text
             Output_screen_value.set(Output_screen_value.get()+text)
