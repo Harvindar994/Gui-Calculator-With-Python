@@ -7,24 +7,53 @@ root.title('Calculator')
 
 Output_screen_value = StringVar()
 Output_screen_value.set("")
-
+Last_value = ''
+Last_number = ''
 def resolve_event(event):
+    global Last_value
+    global Last_number
     global Output_screen_value
     global Output_screen
     text = event.widget.cget('text')
     if text=='C':
         Output_screen_value.set("")
     elif text=='=':
+        num = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
+        ope = ['-','+','*','/']
+        value = Output_screen_value.get()
+        if value[len(value)-1] in ope:
+            return
+
+        for e in num:
+            if e in value:
+                break
+        else:
+            return
+
         result = eval(Output_screen_value.get())
         Output_screen_value.set(result)
+
     elif text=='Backspace':
         if len(Output_screen_value.get())!=0:
             value = Output_screen_value.get()
             value = value[0:len(value)-1]
             Output_screen_value.set(value)
     else:
-        Output_screen_value.set(Output_screen_value.get()+text)
 
+        if text>='0' and text<='9':
+            Last_number += text
+            Output_screen_value.set(Output_screen_value.get()+text)
+        elif Last_value!='+' and Last_value!='-' and Last_value!='*' and Last_value!='/' and Last_value!='.':
+            if text=='.':
+                if '.' in Last_number:
+                    return
+                else:
+                    Last_number += text
+                    Output_screen_value.set(Output_screen_value.get() + text)
+            else:
+                Last_number = ''
+                Output_screen_value.set(Output_screen_value.get() + text)
+    Last_value = text
 
 #-------------------------- Main Screen Creation ------------------------------
 Output_screen = Entry(root, bg='#2b2b2b', disabledbackground='#2b2b2b', foreground='white', textvar=Output_screen_value, justify=RIGHT)
