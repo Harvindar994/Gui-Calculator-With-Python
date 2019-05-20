@@ -17,6 +17,7 @@ to_date = StringVar()
 diff_in_ymwd = StringVar()
 diff_in_days = StringVar()
 from_date.set(datetime.date.today())
+to_date.set(datetime.date.today())
 
 def is_float(value):
     for e in value:
@@ -125,28 +126,223 @@ def author_profile():
     info_label3.place(x=140, y=120)
     Visit_on.place(x=139, y=150)
 
-def date_calculation(date_from='01-01-2019' , date_to='01-01-2019'):
-    print('Working')
-    # today = datetime.date.today()
-    # someday = datetime.date(2008, 12, 25)
-    # diff = someday - today
-    # diff.days
-    day = 0
-    month = 0
-    year = 0
-    year, month, day = [int(e) for e in date_from.split('-')]
-    From = datetime.date(year, month, day)
-    year, month, day = [int(e) for e in date_to.split('-')]
-    To = datetime.date(year, month, day)
-    diff = To - From
-    diff_in_days.set(diff.days)
-    Total_days = diff.days
-    year = str(int(Total_days/365))
-    Total_days = Total_days%365
-    week = str(int(Total_days/7))
-    Total_days = str(int(Total_days%7))
-    result = year +' years, '+week+' week, '+Total_days+' days'
-    diff_in_ymwd.set(result)
+def check_leap_year_or_not(year):
+    if year % 100 == 0 and year % 400 == 0:
+        return True
+    else:
+        return False
+
+def formating_date(date):
+    if len(date) == 10:
+        if (date[2] == '-' or date[2] == '/' or date[2] == ',' or date[2] == ':' or date[2] == '.' or date[2] == '\\') and (date[5] == '-' or date[5] == '/' or date[5] == ',' or date[5] == ':' or date[5] == '.' or date[5] == '\\'):
+            try:
+                day = int(date[0:2])
+                month = int(date[3:5])
+                year = int(date[6:10])
+            except:
+                return 0, 0, 0
+        elif (date[4] == '-' or date[4] == '/' or date[4] == ',' or date[4] == ':' or date[4] == '.' or date[4] == '\\') and (date[7] == '-' or date[7] == '/' or date[7] == ',' or date[7] == ':' or date[7] == '.' or date[7] == '\\'):
+            try:
+                year = int(date[0:4])
+                month = int(date[5:7])
+                day = int(date[8:10])
+            except:
+                return 0, 0, 0
+        else:
+            return 0, 0, 0
+    elif len(date) == 9:
+        if (date[4] == '-' or date[4] == '/' or date[4] == ',' or date[4] == ':' or date[4] == '.' or date[4] == '\\') and (date[1] == '-' or date[1] == '/' or date[1] == ',' or date[1] == ':' or date[1] == '.' or date[1] == '\\'):
+            day = date[0:1]
+            month = date[2:4]
+            year = date[5:9]
+        elif (date[4] == '-' or date[4] == '/' or date[4] == ',' or date[4] == ':' or date[4] == '.' or date[4] == '\\') and (date[2] == '-' or date[2] == '/' or date[2] == ',' or date[2] == ':' or date[2] == '.' or date[2] == '\\'):
+            day = date[0:2]
+            month = date[3:4]
+            year = date[5:9]
+        elif (date[4] == '-' or date[4] == '/' or date[4] == ',' or date[4] == ':' or date[4] == '.' or date[4] == '\\') and (date[6] == '-' or date[6] == '/' or date[6] == ',' or date[6] == ':' or date[6] == '.' or date[6] == '\\'):
+            year = date[0:4]
+            month = date[5:7]
+            day = date[8:9]
+        elif (date[4] == '-' or date[4] == '/' or date[4] == ',' or date[4] == ':' or date[4] == '.' or date[4] == '\\') and (date[7] == '-' or date[7] == '/' or date[7] == ',' or date[7] == ':' or date[7] == '.' or date[7] == '\\'):
+            year = date[0:4]
+            month = date[5:6]
+            day = date[7:9]
+        else:
+            return 0, 0, 0
+    elif len(date) == 8:
+        if (date[3] == '-' or date[3] == '/' or date[3] == ',' or date[3] == ':' or date[3] == '.' or date[3] == '\\') and (date[1] == '-' or date[1] == '/' or date[1] == ',' or date[1] == ':' or date[1] == '.' or date[1] == '\\'):
+            day = date[0:1]
+            month = date[2:3]
+            year = date[4:8]
+        elif (date[4] == '-' or date[4] == '/' or date[4] == ',' or date[4] == ':' or date[4] == '.' or date[4] == '\\') and (date[6] == '-' or date[6] == '/' or date[6] == ',' or date[6] == ':' or date[6] == '.' or date[6] == '\\'):
+            year = date[0:4]
+            month = date[5:6]
+            day = date[7:8]
+        else:
+            return 0, 0, 0
+    else:
+        return 0, 0, 0
+
+    try:
+        day = int(day)
+        month = int(month)
+        year = int(year)
+    except:
+        return 0, 0, 0
+    return day, month, year
+
+def calculate_date(from_date, to_date):
+    month_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    leap_months = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    day_from, month_from, year_from = formating_date(from_date)
+    day_to, month_to, year_to = formating_date(to_date)
+
+    Total_weeks = 0
+    Total_year = 0
+    Total_days = 0
+    Total_month = 0
+    if year_from != year_to:
+        # Count from_date total months and remains days.
+        if check_leap_year_or_not(year_from):
+            if leap_months[month_from-1]-day_from == 0:
+                Total_month_of_from_date = 12 - month_from
+                Total_remains_day_of_from_date = 0
+            else:
+                Total_month_of_from_date = 12 - month_from
+                Total_remains_day_of_from_date = leap_months[month_from-1] - day_from
+        else:
+            if month_days[month_from-1]-day_from == 0:
+                Total_month_of_from_date = 12 - month_from
+                Total_remains_day_of_from_date = 0
+            else:
+                Total_month_of_from_date = 12 - month_from
+                Total_remains_day_of_from_date = month_days[month_from-1] - day_from
+
+        # Count to_date total months and remains days.
+        if check_leap_year_or_not(year_to):
+            if leap_months[month_to-1]-day_to == 0:
+                Total_month_of_to_date = month_to
+                Total_remains_day_of_to_date = 0
+            else:
+                Total_month_of_to_date = month_to - 1
+                Total_remains_day_of_to_date = day_to
+        else:
+            if month_days[month_to-1]-day_to == 0:
+                Total_month_of_to_date = month_to
+                Total_remains_day_of_to_date = 0
+            else:
+                Total_month_of_to_date = month_to - 1
+                Total_remains_day_of_to_date = day_to
+
+        Total_year = (year_to - year_from) - 1
+
+        if Total_month_of_from_date == 12 and Total_remains_day_of_from_date == 0:
+            Total_year += 1
+            Total_month_of_from_date = 0
+        if Total_month_of_to_date == 12 and Total_remains_day_of_to_date == 0:
+            Total_year += 1
+            Total_month_of_to_date = 0
+
+        Total_days = Total_remains_day_of_to_date + Total_remains_day_of_from_date
+        if check_leap_year_or_not(year_to):
+            while True:
+                if Total_days >= leap_months[Total_month_of_to_date]:
+                    Total_days -= leap_months[Total_month_of_to_date]
+                    Total_month_of_to_date += 1
+                    if Total_month_of_to_date == 12:
+                        Total_year += 1
+                        Total_month_of_to_date = 0
+                else:
+                    break
+        else:
+            while True:
+                if Total_days >= month_days[Total_month_of_to_date]:
+                    Total_days -= month_days[Total_month_of_to_date]
+                    Total_month_of_to_date += 1
+                    if Total_month_of_to_date == 12:
+                        Total_year += 1
+                        Total_month_of_to_date = 0
+                else:
+                    break
+        Total_month = Total_month_of_to_date + Total_month_of_from_date
+        while True:
+            if Total_month >= 12:
+                Total_year += 1
+                Total_month -= 12
+            else:
+                break
+        if Total_days > 7:
+            Total_weeks = int(Total_days / 7)
+            Total_days = Total_days % 7
+
+        result = ''
+        if int(Total_year) > 0:
+            result = str(Total_year) + ' year'
+        if int(Total_month) > 0:
+            result += ', ' + str(Total_month) + ' month'
+        if int(Total_weeks) > 0:
+            result += ', ' + str(Total_weeks) + ' week'
+        if int(Total_days) > 0:
+            result += ', ' + str(Total_days) + ' day'
+
+        From_date = datetime.date(year_from, month_from, day_from)
+        TO_date = datetime.date(year_to, month_to, day_to)
+        Total_day = TO_date - From_date
+        Total_day = str(Total_day.days)
+        diff_in_ymwd.set(result)
+        diff_in_days.set(Total_day+' day')
+    else:
+
+        Total_month = 0
+        Total_year = 0
+        Total_day = 0
+        Total_weeks = 0
+        From_date = datetime.date(year_from, month_from, day_from)
+        TO_date = datetime.date(year_to, month_to, day_to)
+
+        Total_day = TO_date - From_date
+        Total_day = Total_day.days
+        start_month = month_from
+        while True:
+            if check_leap_year_or_not(year_to):
+                if Total_day > leap_months[start_month-1]:
+                    Total_month += 1
+                    Total_day -= leap_months[start_month-1]
+                    start_month += 1
+                    if Total_month >= 12:
+                        Total_year += 1
+                        Total_month = 0
+                else:
+                    break
+            else:
+                if Total_day > month_days[start_month-1]:
+                    Total_month += 1
+                    Total_day -= month_days[start_month-1]
+                    start_month += 1
+                    if Total_month >= 12:
+                        Total_year += 1
+                        Total_month = 0
+                else:
+                    break
+        if Total_day >= 7:
+            Total_weeks = str(int(Total_day / 7))
+            Total_day = str(int(Total_day % 7))
+
+        result = ''
+        if int(Total_year) > 0:
+            result = str(Total_year)+' year'
+        if int(Total_month) > 0:
+            result += ', '+str(Total_month)+' month'
+        if int(Total_weeks) > 0:
+            result += ', '+str(Total_weeks)+' week'
+        if int(Total_day) > 0:
+            result += ', '+str(Total_day)+' day'
+
+        Total_day = TO_date - From_date
+        Total_day = str(Total_day.days)
+        diff_in_ymwd.set(result)
+        diff_in_days.set(Total_day+' day')
+
 #-------------------------- Menu Create ------------------------------
 Mainmenu = Menu(root)
 root.config(menu=Mainmenu)
@@ -195,7 +391,7 @@ Date_result_label = Label(Date_cal_frame, text='Difference (year, months, weeks,
 Date_result_label2 = Label(Date_cal_frame, text='Difference(days)', fg='#BBBBBB', bg='#2b2b2b')
 Result1 = Entry(Date_cal_frame, disabledforeground='white', disabledbackground='#2b2b2b', state=DISABLED, textvar = diff_in_ymwd, fg='white', bg='#2b2b2b', highlightbackground='gray33', highlightthickness=1)
 Result2 = Entry(Date_cal_frame, disabledforeground='white', disabledbackground='#2b2b2b', state=DISABLED, textvar = diff_in_days, fg='white', bg='#2b2b2b', highlightbackground='gray33', highlightthickness=1)
-Calculate = Button(Date_cal_frame, bg='#2b2b2b', fg='white', text='Calculate', command=(lambda value=0: date_calculation(from_date.get(), to_date.get())))
+Calculate = Button(Date_cal_frame, bg='#2b2b2b', fg='white', text='Calculate', command=(lambda value=0: calculate_date(from_date.get(), to_date.get())))
 
 Date_from_label.place(x=10, y=35)
 Date_to_label.place(x=170, y=35)
